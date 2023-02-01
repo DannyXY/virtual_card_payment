@@ -58,7 +58,7 @@ export class UsersService {
         try {
             const hashedPassword = await bcrypt.hash(userData.password, 10)
 
-            const url = this.configService.get('NODE_ENV') === 'development' ? `${this.configService.get('SUDO_BASE_TEST_URL')}/customers`: `${this.configService.get('SUDO_BASE_URL')}/customers`
+            const url = `${this.configService.get('SUDO_BASE_TEST_URL')}/customers`;
             const individualData = {
                 type: userData.customerType,
                 name: userData.fullName,
@@ -154,6 +154,7 @@ export class UsersService {
             return user
 
         } catch (err) {
+            console.log(err);
             if (err?.code === MongoError.DuplicateKey) {
                 throw new HttpException(
                     'User with that email already exists',
