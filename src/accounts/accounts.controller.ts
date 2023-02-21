@@ -11,7 +11,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('accounts')
 @ApiBearerAuth()
-@ApiTags('Accountc')
+@ApiTags('Account')
 @UseInterceptors(MongooseClassSerializerInterceptor(Account))
 export class AccountsController {
     constructor(private accountsService: AccountsService) {}
