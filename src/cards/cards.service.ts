@@ -58,6 +58,34 @@ export class CardsService {
         return card;
     }
 
+    async getCardInfo(id: string, token: string) {
+        const vaultApi = await axios.create({
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            baseURL: 'https://vault.sandbox.sudo.cards',
+        });
+
+        const numberResponse = await vaultApi({
+            method: 'GET',
+            url: `/cards/${id}/secure-data/number`,
+        });
+        const cvvResponse = await vaultApi({
+            method: 'GET',
+            url: `/cards/${id}/secure-data/cvv2`,
+        });
+        const pinResponse = await vaultApi({
+            method: 'GET',
+            url: `/cards/${id}/secure-data/defaultPin`,
+        });
+
+        return {
+            number: numberResponse.data.data.number,
+            pin: pinResponse.data.data.pin,
+            cvv2: cvvResponse.data.data.cvv2,
+        };
+    }
+
     async create(cardData: CreateCardDto, user: UserDocument) {
         // try {
         const url =

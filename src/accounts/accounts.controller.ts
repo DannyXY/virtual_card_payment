@@ -22,10 +22,10 @@ export class AccountsController {
         return this.accountsService.get();
     }
 
-    @Get(':id')
+    @Get(':accountId')
     @UseGuards(JwtAuthGuard)
-    async getAccount(@Param('id') id: string) {
-        return this.accountsService.getBySudoId(id);
+    async getAccount(@Param('accountId') accountId: string) {
+        return this.accountsService.getBySudoId(accountId);
     }
 
     @Post()
@@ -37,16 +37,16 @@ export class AccountsController {
         return this.accountsService.create(accountData, request.user.sudoID);
     }
 
-    @Get(':id/balance')
+    @Get(':accountId/balance')
     @UseGuards(JwtAuthGuard)
-    async getAccountBalance(@Param('id') id: string) {
-        return this.accountsService.getAccountBalance(id);
+    async getAccountBalance(@Param('accountId') accountId: string) {
+        return this.accountsService.getAccountBalance(accountId);
     }
 
-    @Get(':id/transactions')
+    @Get(':accountId/transactions')
     @UseGuards(JwtAuthGuard)
-    async getAccountTransactions(@Param('id') id: string) {
-        return this.accountsService.getAccountTransactions(id);
+    async getAccountTransactions(@Param('accountId') accountId: string) {
+        return this.accountsService.getAccountTransactions(accountId);
     }
 
     @Get('/banks')
