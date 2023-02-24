@@ -59,31 +59,37 @@ export class CardsService {
     }
 
     async getCardInfo(id: string, token: string) {
-        const vaultApi = await axios.create({
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            baseURL: 'https://vault.sandbox.sudo.cards',
-        });
+        try {
+            const vaultApi = await axios.create({
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                baseURL: 'https://vault.sandbox.sudo.cards',
+            });
 
-        const numberResponse = await vaultApi({
-            method: 'GET',
-            url: `/cards/${id}/secure-data/number`,
-        });
-        const cvvResponse = await vaultApi({
-            method: 'GET',
-            url: `/cards/${id}/secure-data/cvv2`,
-        });
-        const pinResponse = await vaultApi({
-            method: 'GET',
-            url: `/cards/${id}/secure-data/defaultPin`,
-        });
+            const numberResponse = await vaultApi({
+                method: 'GET',
+                url: `/cards/${id}/secure-data/number`,
+            });
+            const cvvResponse = await vaultApi({
+                method: 'GET',
+                url: `/cards/${id}/secure-data/cvv2`,
+            });
+            const pinResponse = await vaultApi({
+                method: 'GET',
+                url: `/cards/${id}/secure-data/defaultPin`,
+            });
 
-        return {
-            number: numberResponse.data.data.number,
-            pin: pinResponse.data.data.pin,
-            cvv2: cvvResponse.data.data.cvv2,
-        };
+            return {
+                number: numberResponse.data.data.number,
+                pin: pinResponse.data.data.pin,
+                cvv2: cvvResponse.data.data.cvv2,
+            };
+        } catch (err) {
+            throw new InternalServerErrorException(
+                'Something went wrong getting card info',
+            );
+        }
     }
 
     async create(cardData: CreateCardDto, user: UserDocument) {
@@ -444,8 +450,9 @@ export class CardsService {
 
             const response = await axios.request(options);
 
-            return response;
+            return response.data;
         } catch (err) {
+
             throw new HttpException(
                 'Something went wrong while generating card token, Try again!',
                 HttpStatus.INTERNAL_SERVER_ERROR,

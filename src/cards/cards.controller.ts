@@ -57,22 +57,23 @@ export class CardsController {
     ) {
         return this.cardsService.updateCard(id, cardData);
     }
-
     @Get('/cards/:id/token')
     @UseGuards(JwtAuthGuard)
     async generateCardToken(@Param('id') id: string) {
         return this.cardsService.generateCardToken(id);
     }
-
-    @Get('/cards/:id/info/:token')
-    @UseGuards(JwtAuthGuard)
-    async getCardDetails(@Param() params: { id: string; token: string }) {
-        return this.cardsService.getCardInfo(params.id, params.token);
-    }
-
     @Get(':cardId/transactions')
     @UseGuards(JwtAuthGuard)
     async getCardTransactions(@Param('cardId') cardId: string) {
         return this.cardsService.getCardTransactions(cardId);
+    }
+
+    @Get('/cards/:id/info/:token')
+    @UseGuards(JwtAuthGuard)
+    async getCardDetails(
+        @Param('id') id: string,
+        @Param('token') token: string,
+    ) {
+        return this.cardsService.getCardInfo(id, token);
     }
 }
