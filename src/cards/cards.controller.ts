@@ -21,9 +21,21 @@ export class CardsController {
         return this.cardsService.get();
     }
 
+    @Get('/customer')
+    @UseGuards(JwtAuthGuard)
+    async getCustomerCards(@Req() request: RequestWithUser) {
+        return this.cardsService.getCustomerCards(request.user.sudoID);
+    }
+
+    @Get('transactions')
+    @UseGuards(JwtAuthGuard)
+    async getAllTransactions() {
+        return this.getAllTransactions();
+    }
+
     @Get(':id')
     @UseGuards(JwtAuthGuard)
-    async getCard(@Param() id: string) {
+    async getCard(@Param('id') id: string) {
         return this.cardsService.getBySudoId(id);
     }
 
@@ -36,37 +48,25 @@ export class CardsController {
         return this.cardsService.create(cardData, request.user);
     }
 
-    @Get('/customer/:id')
-    @UseGuards(JwtAuthGuard)
-    async getCustomerCards(@Req() request: RequestWithUser) {
-        return this.cardsService.getCustomerCards(request.user.sudoID);
-    }
-
     @Put(':id')
     @UseGuards(JwtAuthGuard)
     async updateCard(
         @Body() cardData: UpdateCardDto,
         @Req() request: RequestWithUser,
-        @Param() id: string,
+        @Param('id') id: string,
     ) {
         return this.cardsService.updateCard(id, cardData);
     }
 
     @Get('/cards/:id/token')
     @UseGuards(JwtAuthGuard)
-    async generateCardToken(@Param() id: string) {
+    async generateCardToken(@Param('id') id: string) {
         return this.cardsService.generateCardToken(id);
-    }
-
-    @Get('transactions')
-    @UseGuards(JwtAuthGuard)
-    async getAllTransactions() {
-        return this.getAllTransactions();
     }
 
     @Get(':id/transactions')
     @UseGuards(JwtAuthGuard)
-    async getCardTransactions(@Param() id: string) {
+    async getCardTransactions(@Param('id') id: string) {
         return this.cardsService.getCardTransactions(id);
     }
 }

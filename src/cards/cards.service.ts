@@ -7,6 +7,7 @@ import {
     HttpStatus,
     HttpException,
     InternalServerErrorException,
+    BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -66,6 +67,10 @@ export class CardsService {
 
         enum cardType {
             VIRTUAL = 'virtual',
+        }
+
+        if (parseInt(cardData.amount) <= 0) {
+            throw new BadRequestException('Enter a valid amount');
         }
 
         const data = {
@@ -134,49 +139,49 @@ export class CardsService {
             const totalAmount = conertCardCreationFee + nairaAmount;
 
             // check if user has enough balance
-            if (sudoCustomerBalance.data.data.currentBalance < totalAmount) {
-                throw new HttpException(
-                    {
-                        code: 'INTERNAL_SERVER_ERROR',
-                        message: 'Insufficient funds',
-                    },
-                    HttpStatus.BAD_REQUEST,
-                );
-            }
+            // if (sudoCustomerBalance.data.data.currentBalance < totalAmount) {
+            //     throw new HttpException(
+            //         {
+            //             code: 'INTERNAL_SERVER_ERROR',
+            //             message: 'Insufficient funds',
+            //         },
+            //         HttpStatus.BAD_REQUEST,
+            //     );
+            // }
 
             // debit user naira balance
-            const sudoDebitCustomerBalance = await this.sudoApi({
-                method: 'POST',
-                url: '/accounts/transfer',
-                data: {
-                    debitAccountId: user.accountId,
-                    creditAccountId: this.configService.get(
-                        'SUDO_NGN_ACCOUNT_ID',
-                    ),
-                    amount: totalAmount,
-                    narration: 'card creation',
-                    paymentReference: `${Math.floor(
-                        Math.random() * 10000000000,
-                    )}`,
-                },
-            });
+            // const sudoDebitCustomerBalance = await this.sudoApi({
+            //     method: 'POST',
+            //     url: '/accounts/transfer',
+            //     data: {
+            //         debitAccountId: user.accountId,
+            //         creditAccountId: this.configService.get(
+            //             'SUDO_NGN_ACCOUNT_ID',
+            //         ),
+            //         amount: totalAmount,
+            //         narration: 'card creation',
+            //         paymentReference: `${Math.floor(
+            //             Math.random() * 10000000000,
+            //         )}`,
+            //     },
+            // });
 
-            if (sudoDebitCustomerBalance.status !== 200) {
-                throw new HttpException(
-                    {
-                        code: 'INTERNAL_SERVER_ERROR',
-                        message: 'Something went wrong',
-                    },
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                );
-            }
+            // if (sudoDebitCustomerBalance.status !== 200) {
+            //     throw new HttpException(
+            //         {
+            //             code: 'INTERNAL_SERVER_ERROR',
+            //             message: 'Something went wrong',
+            //         },
+            //         HttpStatus.INTERNAL_SERVER_ERROR,
+            //     );
+            // }
 
             // create card
             const sudoCreateCard = await this.sudoApi({
                 method: 'POST',
                 url: '/cards',
                 data: {
-                    customerId: user.accountId,
+                    customerId: user.sudoID,
                     debitAccountId: this.configService.get(
                         'SUDO_USD_ACCOUNT_ID',
                     ),
@@ -186,7 +191,7 @@ export class CardsService {
                     status: 'active',
                     metadata: {},
                     brand: 'MasterCard',
-                    amount: cardData.amount,
+                    amount: parseInt(cardData.amount),
                 },
             });
 
@@ -231,18 +236,18 @@ export class CardsService {
         // creation of naira card
 
         // check if user has enough balance
-        if (
-            sudoCustomerBalance.data.data.currentBalance <
-            parseInt(cardData.amount)
-        ) {
-            throw new HttpException(
-                {
-                    code: 'BAD_REQUEST',
-                    message: 'Insufficient funds',
-                },
-                HttpStatus.BAD_REQUEST,
-            );
-        }
+        // if (
+        //     sudoCustomerBalance.data.data.currentBalance <
+        //     parseInt(cardData.amount)
+        // ) {
+        //     throw new HttpException(
+        //         {
+        //             code: 'BAD_REQUEST',
+        //             message: 'Insufficient funds',
+        //         },
+        //         HttpStatus.BAD_REQUEST,
+        //     );
+        // }
 
         const sudoCustomerWallet = await this.sudoApi({
             method: 'GET',
@@ -264,14 +269,14 @@ export class CardsService {
             method: 'POST',
             url: '/cards',
             data: {
-                customerId: user.accountId,
-                debitAccountId: user.accountId,
+                customerId: user.sudoID,
+                debitAccountId: this.configService.get('SUDO_USD_ACCOUNT_ID'),
                 issuerCountry: 'NGA',
                 type: 'virtual',
                 currency: 'NGN',
                 status: 'active',
                 metadata: {},
-                brand: 'Verve',
+                brand: 'Visa',
                 amount: cardData.amount,
             },
         });
@@ -437,8 +442,6 @@ export class CardsService {
                 headers: this.headers,
             };
 
-
-
             const response = await axios.request(options);
 
             return response.data;
@@ -472,7 +475,7 @@ export class CardsService {
 
             return response.data;
         } catch (err) {
-            console.log(err.response.data.message)
+            console.log(err.response.data.message);
             throw new HttpException(
                 'Something went wrong while sending card transactions, Try again!',
                 HttpStatus.INTERNAL_SERVER_ERROR,

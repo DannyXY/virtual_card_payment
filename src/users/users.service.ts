@@ -174,6 +174,16 @@ export class UsersService {
                     url: `/accounts/${firstTimeUserCard.data.data.account._id}`,
                 });
 
+                if (sudoCustomerWallet.status !== 200) {
+                    throw new HttpException(
+                        {
+                            code: 'INTERNAL_SERVER_ERROR',
+                            message: 'Something went wrong',
+                        },
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                    );
+                }
+
                 const account = await this.accountModel.create({
                     sudoID: sudoCustomerWallet.data.data?._id,
                     type: sudoCustomerWallet.data.data?.type,
@@ -186,16 +196,23 @@ export class UsersService {
                         sudoCustomerWallet.data.data?.availableBalance,
                     bankCode: sudoCustomerWallet.data.data?.bankCode,
                 });
+                const sudoCreditCustomerBalance = await this.sudoApi({
+                    method: 'POST',
+                    url: '/accounts/transfer',
+                    data: {
+                        debitAccountId: this.configService.get(
+                            'SUDO_USD_ACCOUNT_ID',
+                        ),
+                        creditAccountId: sudoCustomerWallet.data.data._id,
+                        amount: 5,
+                        narration: 'card creation',
+                        paymentReference: `${Math.floor(
+                            Math.random() * 10000000000,
+                        )}`,
+                    },
+                });
 
-                if (sudoCustomerWallet.status !== 200) {
-                    throw new HttpException(
-                        {
-                            code: 'INTERNAL_SERVER_ERROR',
-                            message: 'Something went wrong',
-                        },
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                    );
-                }
+                console.log(sudoCreditCustomerBalance);
 
                 const user = await this.userModel.create({
                     sudoID: sudoCustomer.data.data._id,
