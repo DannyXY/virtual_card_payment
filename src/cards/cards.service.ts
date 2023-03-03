@@ -64,7 +64,7 @@ export class CardsService {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-                baseURL: 'https://vault.sandbox.sudo.cards',
+                baseURL: 'https://vault.sudo.africa',
             });
 
             const numberResponse = await vaultApi({
