@@ -131,7 +131,6 @@ export class CardsService {
             url: `/accounts/${user.accountId}/balance`,
         });
 
-
         if (sudoCustomerBalance.data.statusCode !== 200) {
             throw new HttpException(
                 {
@@ -149,8 +148,6 @@ export class CardsService {
                 method: 'GET',
                 url: `/accounts/transfer/rate/USDNGN`,
             });
-
-            console.log(sudoExchangeRate);
 
             if (sudoExchangeRate.data.statusCode !== 200)
                 throw new HttpException(
@@ -172,7 +169,6 @@ export class CardsService {
                     parseInt(this.configService.get('FUNDING_FEE_NAIRA')));
 
             const totalAmount = conertCardCreationFee + nairaAmount;
-            console.log(totalAmount);
 
             // check if user has enough balance
             if (sudoCustomerBalance.data.data.currentBalance < totalAmount) {
@@ -201,7 +197,6 @@ export class CardsService {
                     )}`,
                 },
             });
-            console.log(sudoDebitCustomerBalance);
             if (sudoDebitCustomerBalance.status !== 201) {
                 throw new HttpException(
                     {
@@ -315,6 +310,28 @@ export class CardsService {
             );
         }
 
+        // debit user naira balance
+        const sudoDebitCustomerBalance = await this.sudoApi({
+            method: 'POST',
+            url: '/accounts/transfer',
+            data: {
+                debitAccountId: user.accountId,
+                creditAccountId: this.configService.get('SUDO_NGN_ACCOUNT_ID'),
+                amount: parseInt(cardData.amount),
+                narration: 'card creation',
+                paymentReference: `${Math.floor(Math.random() * 10000000000)}`,
+            },
+        });
+        if (sudoDebitCustomerBalance.status !== 201) {
+            throw new HttpException(
+                {
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Something went wrong',
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+
         // create card
 
         const sudoCreateCard = await this.sudoApi({
@@ -322,19 +339,34 @@ export class CardsService {
             url: '/cards',
             data: {
                 customerId: user.sudoID,
-                debitAccountId: sudoCustomerWallet.data.data._id,
+                debitAccountId: this.configService.get('SUDO_NGN_ACCOUNT_ID'),
                 issuerCountry: 'NGA',
                 type: 'virtual',
                 currency: 'NGN',
                 status: 'active',
                 metadata: {},
-                brand: 'Visa',
-                amount: cardData.amount,
+                brand: 'Verve',
+                amount: parseInt(cardData.amount),
             },
         });
-        console.log(sudoCreateCard);
 
         if (sudoCreateCard.data.statusCode !== 200) {
+            // debit user naira balance
+            const sudoDebitCustomerBalance = await this.sudoApi({
+                method: 'POST',
+                url: '/accounts/transfer',
+                data: {
+                    debitAccountId: this.configService.get(
+                        'SUDO_NGN_ACCOUNT_ID',
+                    ),
+                    creditAccountId: user.accountId,
+                    amount: parseInt(cardData.amount),
+                    narration: 'card creation - reversal',
+                    paymentReference: `${Math.floor(
+                        Math.random() * 10000000000,
+                    )}`,
+                },
+            });
             throw new HttpException(
                 {
                     code: 'INTERNAL_SERVER_ERROR',
