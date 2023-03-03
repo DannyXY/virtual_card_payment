@@ -34,7 +34,6 @@ export class AccountsService {
 
     async getBySudoId(sudoID: string) {
         const account = await this.accountModel.findOne({ sudoID });
-        console.log(account, sudoID);
         if (!account) {
             throw new HttpException(
                 'Account with this id does not exist',
