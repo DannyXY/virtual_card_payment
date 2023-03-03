@@ -66,10 +66,6 @@ export class User {
     identityType: string;
 
     @Prop()
-    @Exclude()
-    identityNumber: string;
-
-    @Prop()
     companyName: string;
 
     @Prop()

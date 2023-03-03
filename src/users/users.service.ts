@@ -194,8 +194,6 @@ export class UsersService {
                     dob: sudoCustomer.data.data?.individual?.dob,
                     identityType:
                         sudoCustomer.data.data?.individual?.identity?.type,
-                    identityNumber:
-                        sudoCustomer.data.data?.individual?.identity?.number,
                     companyName: sudoCustomer.data.data?.company?.name,
                     companIdentityType:
                         sudoCustomer.data.data?.company?.identity?.type,
