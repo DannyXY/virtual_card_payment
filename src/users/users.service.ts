@@ -133,7 +133,7 @@ export class UsersService {
                     //    }
                 });
 
-                if (sudoCustomer.status !== 201) {
+                if (sudoCustomer.data.statusCode !== 200) {
                     throw new HttpException(
                         {
                             code: 'INTERNAL_SERVER_ERROR',
@@ -142,22 +142,18 @@ export class UsersService {
                         HttpStatus.INTERNAL_SERVER_ERROR,
                     );
                 }
-                const firstTimeUserCard = await this.sudoApi({
+                const sudoCustomerWallet = await this.sudoApi({
                     method: 'POST',
-                    url: '/cards',
+                    url: '/accounts',
                     data: {
                         currency: 'NGN',
-                        brand: 'Visa',
-                        debitAccountId:
-                            this.configService.get('SUDO_USD_ACCOUNT_ID'),
+                        type: 'wallet',
+                        accountType: 'Current',
                         customerId: sudoCustomer.data.data._id,
-                        status: 'active',
-                        type: 'virtual',
-                        amount: 0,
                     },
                 });
 
-                if (firstTimeUserCard.status !== 201) {
+                if (sudoCustomerWallet.status !== 201) {
                     throw new HttpException(
                         {
                             code: 'INTERNAL_SERVER_ERROR',
@@ -166,24 +162,6 @@ export class UsersService {
                         HttpStatus.INTERNAL_SERVER_ERROR,
                     );
                 }
-
-                console.log(firstTimeUserCard)
-
-                const sudoCustomerWallet = await this.sudoApi({
-                    method: 'GET',
-                    url: `/accounts/${firstTimeUserCard.data.data.account._id}`,
-                });
-
-                if (sudoCustomerWallet.status !== 200) {
-                    throw new HttpException(
-                        {
-                            code: 'INTERNAL_SERVER_ERROR',
-                            message: 'Something went wrong',
-                        },
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                    );
-                }
-
                 const account = await this.accountModel.create({
                     sudoID: sudoCustomerWallet.data.data?._id,
                     type: sudoCustomerWallet.data.data?.type,
@@ -196,23 +174,6 @@ export class UsersService {
                         sudoCustomerWallet.data.data?.availableBalance,
                     bankCode: sudoCustomerWallet.data.data?.bankCode,
                 });
-                const sudoCreditCustomerBalance = await this.sudoApi({
-                    method: 'POST',
-                    url: '/accounts/transfer',
-                    data: {
-                        debitAccountId: this.configService.get(
-                            'SUDO_USD_ACCOUNT_ID',
-                        ),
-                        creditAccountId: sudoCustomerWallet.data.data._id,
-                        amount: 5,
-                        narration: 'card creation',
-                        paymentReference: `${Math.floor(
-                            Math.random() * 10000000000,
-                        )}`,
-                    },
-                });
-
-                console.log(sudoCreditCustomerBalance);
 
                 const user = await this.userModel.create({
                     sudoID: sudoCustomer.data.data._id,
@@ -240,7 +201,7 @@ export class UsersService {
                         sudoCustomer.data.data?.company?.identity?.type,
                     companyIdentityNumber:
                         sudoCustomer.data.data?.company?.identity?.number,
-                    accountId: firstTimeUserCard.data.data.account._id,
+                    accountId: sudoCustomerWallet.data.data._id,
                 });
                 return user;
             }

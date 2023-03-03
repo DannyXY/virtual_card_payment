@@ -7,11 +7,6 @@ import * as bcrypt from 'bcryptjs'
 import MongoError from 'src/utils/mongoError.enum';
 import { JwtService } from '@nestjs/jwt';
 import TokenPayload from './tokenPayload.interface';
-
-
-
-
-
 @Injectable()
 export class AuthenticationService {
     constructor(private readonly usersService: UsersService, 

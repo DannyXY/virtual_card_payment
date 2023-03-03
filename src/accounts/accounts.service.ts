@@ -43,12 +43,13 @@ export class AccountsService {
         const options = {
             method: 'GET',
             url: `${this.configService.get(
-                'SUDO_BASE_TEST_URL',
+                'SUDO_BASE_URL',
             )}/accounts/${sudoID}`,
             headers: this.headers,
         };
 
         const sudoCustomerWallet = await axios.request(options);
+
         await this.accountModel.findOneAndUpdate(
             { sudoID },
             {
@@ -83,7 +84,6 @@ export class AccountsService {
             };
 
             const response = await axios.request(options);
-            console.log(response);
             const account = await this.accountModel.create({
                 sudoID: response.data.data?._id,
                 type: response.data.data?.type,
@@ -95,7 +95,6 @@ export class AccountsService {
             });
             return account;
         } catch (err) {
-            console.log(err);
             throw new HttpException(
                 'Something went wrong while creating an account, Try again!',
                 HttpStatus.INTERNAL_SERVER_ERROR,
