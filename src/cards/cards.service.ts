@@ -82,7 +82,7 @@ export class CardsService {
 
             return {
                 number: numberResponse.data.data.number,
-                pin: pinResponse.data.data.pin,
+                pin: pinResponse.data.data.defaultPin,
                 cvv2: cvvResponse.data.data.cvv2,
             };
         } catch (err) {
